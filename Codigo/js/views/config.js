@@ -46,6 +46,9 @@ export const config = {
         <p>Respalda o restaura toda la información de la app.</p>
         <button id="cfg-backup" class="btn btn--ghost btn--block" type="button">⬇️ Respaldar (JSON)</button>
         <button id="cfg-csv" class="btn btn--ghost btn--block" type="button">📄 Exportar inventario (CSV)</button>
+        <button id="cfg-csv-compras" class="btn btn--ghost btn--block" type="button">📄 Exportar compras (CSV)</button>
+        <button id="cfg-csv-ventas" class="btn btn--ghost btn--block" type="button">📄 Exportar ventas (CSV)</button>
+        <button id="cfg-csv-cortes" class="btn btn--ghost btn--block" type="button">📄 Exportar cortes (CSV)</button>
         <input id="cfg-restore-input" type="file" accept="application/json,.json" class="hidden" />
         <button id="cfg-restore" class="btn btn--ghost btn--block" type="button">⬆️ Restaurar respaldo</button>
       </section>
@@ -124,6 +127,48 @@ export const config = {
           { key: 'costoUnitario', label: 'Costo unitario' },
         ]
       );
+      toast('CSV generado', 'success');
+    });
+
+    view.querySelector('#cfg-csv-compras').addEventListener('click', async () => {
+      const filas = await getAll('compras');
+      if (!filas.length) return toast('Aún no hay compras', 'info');
+      descargarCSV(`compras-${hoyISO()}.csv`, filas, [
+        { key: 'fecha', label: 'Fecha' },
+        { key: 'proveedor', label: 'Proveedor' },
+        { key: 'estatus', label: 'Estatus' },
+        { key: 'costoEnvio', label: 'Envío' },
+      ]);
+      toast('CSV generado', 'success');
+    });
+
+    view.querySelector('#cfg-csv-ventas').addEventListener('click', async () => {
+      const filas = await getAll('ventas');
+      if (!filas.length) return toast('Aún no hay ventas', 'info');
+      descargarCSV(`ventas-${hoyISO()}.csv`, filas, [
+        { key: 'fecha', label: 'Fecha' },
+        { key: 'hora', label: 'Hora' },
+        { key: 'subtotal', label: 'Subtotal' },
+        { key: 'descuento', label: 'Descuento' },
+        { key: 'total', label: 'Total' },
+        { key: 'metodoPago', label: 'Método' },
+        { key: 'estado', label: 'Estado' },
+      ]);
+      toast('CSV generado', 'success');
+    });
+
+    view.querySelector('#cfg-csv-cortes').addEventListener('click', async () => {
+      const filas = await getAll('cortes');
+      if (!filas.length) return toast('Aún no hay cortes', 'info');
+      descargarCSV(`cortes-${hoyISO()}.csv`, filas, [
+        { key: 'fecha', label: 'Fecha' },
+        { key: 'nombreTipoLote', label: 'Tipo de lote' },
+        { key: 'inversion', label: 'Inversión' },
+        { key: 'ventas', label: 'Ventas' },
+        { key: 'ganancia', label: 'Ganancia' },
+        { key: 'productosVendidos', label: 'Vendidos' },
+        { key: 'productosRestantes', label: 'Restantes' },
+      ]);
       toast('CSV generado', 'success');
     });
 
