@@ -50,6 +50,13 @@ export function inversionTotalLotes(lotes) {
   return redondear(lotes.reduce((acc, l) => acc + inversionLote(l), 0));
 }
 
+/** Total de una compra: Σ costo de lotes + costo de envío. */
+export function totalCompra(lotes, costoEnvio) {
+  return redondear(
+    (lotes || []).reduce((acc, l) => acc + (Number(l.costo) || 0), 0) + (Number(costoEnvio) || 0)
+  );
+}
+
 /** Costo promedio ponderado de un tipo de lote. */
 export function costoPromedioPonderado(inversionTotal, unidadesVendibles) {
   return costoUnitarioLote(inversionTotal, unidadesVendibles);

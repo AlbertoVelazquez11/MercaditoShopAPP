@@ -15,6 +15,7 @@ const CORE = [
   './js/db.js',
   './js/utils.js',
   './js/negocio.js',
+  './js/dominio.js',
   './js/export.js',
   './js/gestures.js',
   './js/components/header.js',

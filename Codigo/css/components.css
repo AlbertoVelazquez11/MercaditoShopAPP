@@ -364,9 +364,10 @@
 
 /* ---------- Fab ---------- */
 .fab {
-  position: sticky;
+  position: fixed;
+  right: var(--s-4);
   bottom: calc(var(--safe-bottom) + var(--s-4));
-  float: right;
+  z-index: 30;
   width: 60px;
   height: 60px;
   border-radius: var(--r-pill);
@@ -378,7 +379,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: var(--s-4);
 }
 
 .fab:active { transform: scale(0.95); }

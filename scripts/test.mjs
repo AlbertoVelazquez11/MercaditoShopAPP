@@ -12,6 +12,7 @@ import {
   calcularCambio,
   gananciaEstimada,
   metricasTipoLote,
+  totalCompra,
 } from '../Codigo/js/negocio.js';
 import { uid, aISO, moneda, redondear, aNumero, escapeHtml } from '../Codigo/js/utils.js';
 
@@ -102,6 +103,11 @@ t('metricasTipoLote consolidadas', () => {
   assert.equal(m.pendiente, 400);
   assert.equal(m.ganancia, -400);
   assert.equal(m.gananciaEstimada, -250);
+});
+t('totalCompra (Σ costo lotes + envío)', () => {
+  assert.equal(totalCompra([{ costo: 100 }, { costo: 50 }], 10), 160);
+  assert.equal(totalCompra([], 0), 0);
+  assert.equal(totalCompra(null, 25), 25);
 });
 
 console.log('\nutils.js');
