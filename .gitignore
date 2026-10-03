@@ -3,6 +3,7 @@ node_modules/
 
 # Vercel
 .vercel/
+.env*
 
 # Sistema / editor
 .DS_Store
