@@ -1,0 +1,12 @@
+# Dependencias
+node_modules/
+
+# Vercel
+.vercel/
+
+# Sistema / editor
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
