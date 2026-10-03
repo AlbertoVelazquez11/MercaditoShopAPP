@@ -11,3 +11,8 @@ Thumbs.db
 *.log
 .vscode/
 .idea/
+
+# Artefactos locales (memoria y tracking)
+.engram/
+odd/
+.atl/
