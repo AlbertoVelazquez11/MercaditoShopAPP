@@ -55,9 +55,9 @@ PWA 100% offline para administrar mercancía comprada por lotes (mayoreo), catal
 | Sprint | Alcance | Estado |
 |---|---|---|
 | 1 | Core PWA, shell, DB, Home, Config | ✅ Completado |
-| 2 | Compras y Lotes | ⏳ Pendiente |
-| 3 | Catalogar | ⏳ Pendiente |
-| 4 | Tipo de Lote e Inventario | ⏳ Pendiente |
-| 5 | Venta (POS) | ⏳ Pendiente |
-| 6 | Descuentos y Corte | ⏳ Pendiente |
-| 7 | Exportación, QA y lanzamiento | ⏳ Pendiente |
+| 2 | Compras y Lotes | ✅ Completado |
+| 3 | Catalogar | ✅ Completado |
+| 4 | Tipo de Lote e Inventario | ✅ Completado |
+| 5 | Venta (POS) | ✅ Completado |
+| 6 | Descuentos y Corte | ✅ Completado |
+| 7 | Exportación, QA y lanzamiento | ✅ Completado |
