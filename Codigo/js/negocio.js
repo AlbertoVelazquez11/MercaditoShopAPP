@@ -113,3 +113,52 @@ export function metricasTipoLote({ inversionTotal, cantidadVendibleTotal, ventas
     gananciaEstimada: gananciaEstimada(articulos, inversion),
   };
 }
+
+/**
+ * Agrupa artículos por descripción (insensible a mayúsculas) sumando stock,
+ * para mostrar una sola línea por producto aunque exista en varios lotes.
+ * @param {Array} articulos
+ */
+export function agruparPorDescripcion(articulos) {
+  const map = new Map();
+  for (const a of articulos) {
+    const key = (a.descripcion || '').trim().toLowerCase();
+    if (!map.has(key)) {
+      map.set(key, {
+        descripcion: a.descripcion,
+        precioSugerido: a.precioSugerido,
+        esMerma: a.esMerma,
+        stock: 0,
+        cantidad: 0,
+        ids: [],
+      });
+    }
+    const g = map.get(key);
+    g.stock += Number(a.stock) || 0;
+    g.cantidad += Number(a.cantidad) || 0;
+    g.ids.push(a.id);
+  }
+  return [...map.values()];
+}
+
+/**
+ * Distribuye un descuento (monto fijo) proporcional al subtotal de cada línea.
+ * El redondeo se absorbe en la última línea para que la suma cuadre.
+ * @param {{subtotal:number}[]} lineas
+ * @param {number} descuento
+ */
+export function distribuirDescuento(lineas, descuento) {
+  const d = Math.max(0, Number(descuento) || 0);
+  const subtotal = lineas.reduce((a, l) => a + (Number(l.subtotal) || 0), 0);
+  if (subtotal <= 0) {
+    return lineas.map((l) => ({ ...l, descuentoLinea: 0, subtotalLinea: Number(l.subtotal) || 0 }));
+  }
+  let asignado = 0;
+  return lineas.map((l, i) => {
+    const sub = Number(l.subtotal) || 0;
+    const esUltima = i === lineas.length - 1;
+    const share = esUltima ? redondear(d - asignado) : redondear(d * (sub / subtotal));
+    asignado += share;
+    return { ...l, descuentoLinea: share, subtotalLinea: redondear(sub - share) };
+  });
+}

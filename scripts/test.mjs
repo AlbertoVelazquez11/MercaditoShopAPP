@@ -13,6 +13,8 @@ import {
   gananciaEstimada,
   metricasTipoLote,
   totalCompra,
+  agruparPorDescripcion,
+  distribuirDescuento,
 } from '../Codigo/js/negocio.js';
 import { uid, aISO, moneda, redondear, aNumero, escapeHtml } from '../Codigo/js/utils.js';
 
@@ -108,6 +110,28 @@ t('totalCompra (Σ costo lotes + envío)', () => {
   assert.equal(totalCompra([{ costo: 100 }, { costo: 50 }], 10), 160);
   assert.equal(totalCompra([], 0), 0);
   assert.equal(totalCompra(null, 25), 25);
+});
+t('agruparPorDescripcion suma stock y fusiona mayúsculas', () => {
+  const g = agruparPorDescripcion([
+    { id: 'a', descripcion: 'Calceta reno', stock: 3, cantidad: 5, precioSugerido: 50, esMerma: false },
+    { id: 'b', descripcion: 'calceta RENO', stock: 2, cantidad: 5, precioSugerido: 50, esMerma: false },
+    { id: 'c', descripcion: 'Merma', stock: 1, cantidad: 1, precioSugerido: 0, esMerma: true },
+  ]);
+  assert.equal(g.length, 2);
+  const calceta = g.find((x) => x.descripcion === 'Calceta reno');
+  assert.equal(calceta.stock, 5);
+  assert.equal(calceta.ids.length, 2);
+});
+t('distribuirDescuento reparte y suma exacto', () => {
+  const r = distribuirDescuento([{ subtotal: 50 }, { subtotal: 30 }, { subtotal: 20 }], 10);
+  assert.equal(r[0].subtotalLinea, 45); // 50 - 5
+  assert.equal(r[1].subtotalLinea, 27); // 30 - 3
+  assert.equal(r[2].subtotalLinea, 18); // 20 - 2 (absorbe redondeo)
+  assert.equal(r.reduce((a, l) => a + l.descuentoLinea, 0), 10);
+});
+t('distribuirDescuento sin subtotal no divide por 0', () => {
+  const r = distribuirDescuento([{ subtotal: 0 }], 10);
+  assert.equal(r[0].subtotalLinea, 0);
 });
 
 console.log('\nutils.js');

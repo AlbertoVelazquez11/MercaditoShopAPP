@@ -3,7 +3,7 @@ import { header } from '../components/header.js';
 import { toast } from '../components/toast.js';
 import { confirmar } from '../components/modal.js';
 import { getAll, get, put, getAllByIndex, getByIndex } from '../db.js';
-import { uid, fecha, moneda, escapeHtml, aNumero, redondear } from '../utils.js';
+import { uid, fecha, moneda, escapeHtml, aNumero } from '../utils.js';
 import { cantidadVendible, costoUnitarioLote, gananciaEstimada } from '../negocio.js';
 import { navigate } from '../router.js';
 
@@ -283,39 +283,22 @@ async function resolverTipoLote(nombre) {
 
 async function guardarArticulos(loteId, tipoLoteId, articulos, costoUnitario) {
   const ahora = new Date().toISOString();
-  const existentes = await getAllByIndex('articulos', 'tipoLoteId', tipoLoteId);
-
+  // Los artículos se guardan SEPARADOS por lote para permitir consumo FIFO
+  // (el más antiguo primero) en Venta. La fusión por descripción se hace en la vista.
   for (const a of articulos) {
-    const clave = a.descripcion.toLowerCase();
-    const existente = existentes.find(
-      (x) => x.descripcion.toLowerCase() === clave && (x.esMerma === a.esMerma)
-    );
-    if (existente) {
-      const stockViejo = Number(existente.stock) || 0;
-      const stockNuevo = stockViejo + a.cantidad;
-      existente.cantidad = (Number(existente.cantidad) || 0) + a.cantidad;
-      existente.stock = stockNuevo;
-      // costo unitario: promedio ponderado del stock combinado
-      existente.costoUnitario = redondear(
-        ((Number(existente.costoUnitario) || 0) * stockViejo + costoUnitario * a.cantidad) / stockNuevo
-      );
-      existente.actualizadoEn = ahora;
-      await put('articulos', existente);
-    } else {
-      await put('articulos', {
-        id: uid('art'),
-        loteId,
-        tipoLoteId,
-        descripcion: a.descripcion,
-        cantidad: a.cantidad,
-        stock: a.cantidad,
-        precioSugerido: a.precioSugerido,
-        costoUnitario,
-        esMerma: a.esMerma,
-        esRemanente: false,
-        creadoEn: ahora,
-        actualizadoEn: ahora,
-      });
-    }
+    await put('articulos', {
+      id: uid('art'),
+      loteId,
+      tipoLoteId,
+      descripcion: a.descripcion,
+      cantidad: a.cantidad,
+      stock: a.cantidad,
+      precioSugerido: a.precioSugerido,
+      costoUnitario,
+      esMerma: a.esMerma,
+      esRemanente: false,
+      creadoEn: ahora,
+      actualizadoEn: ahora,
+    });
   }
 }
