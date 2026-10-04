@@ -13,7 +13,7 @@
 .home__gear {
   position: absolute;
   top: calc(var(--safe-top) + var(--s-3));
-  left: var(--s-3);
+  right: var(--s-3);
 }
 
 .home__logo {
@@ -29,10 +29,6 @@
   letter-spacing: -0.02em;
 }
 
-.home__subtitle {
-  color: var(--c-text-muted);
-  margin-top: -16px;
-}
 
 .home__actions {
   width: 100%;
