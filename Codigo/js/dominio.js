@@ -4,11 +4,13 @@ export const ESTATUS_COMPRA = {
   solicitada: 'Solicitada',
   pagada: 'Pagada',
   en_camino: 'En camino',
-  recibida: 'Recibida',
+  recibida: 'Recibido',
+  recibida_parcial: 'Recibido parcial',
   cancelada_devuelta: 'Cancelada/Devuelta',
 };
 
 export const SUBESTADO_LOTE = {
+  en_camino: 'En camino',
   recibido: 'Recibido',
   no_llego: 'No llegó',
   devuelto: 'Devuelto',

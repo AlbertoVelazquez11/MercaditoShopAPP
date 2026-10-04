@@ -11,10 +11,7 @@ export const home = {
     view.innerHTML = `
       <a class="btn btn--icon home__gear" href="#/config" aria-label="Configuración">⚙️</a>
       <img class="home__logo" src="${cfg.logo || './icons/icon.svg'}" alt="Logo" />
-      <div>
-        <div class="home__brand">${escapeHtml(cfg.nombreNegocio)}</div>
-        <div class="home__subtitle">Control de inventario por lotes</div>
-      </div>
+      <div class="home__brand">${escapeHtml(cfg.nombreNegocio)}</div>
       <div class="home__actions">
         <a class="btn btn--primary" href="#/venta">🛒 Venta</a>
         <a class="btn btn--ghost" href="#/admin">⚙️ Administración</a>

@@ -32,7 +32,7 @@ async function renderPOS(container) {
   histBtn.setAttribute('aria-label', 'Historial de ventas');
   histBtn.textContent = '🕘';
 
-  header(container, 'Venta', { right: histBtn });
+  header(container, 'Venta', { back: true, right: histBtn });
   const view = document.createElement('div');
   view.className = 'view';
   view.innerHTML = `

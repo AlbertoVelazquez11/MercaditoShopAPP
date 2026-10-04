@@ -9,7 +9,7 @@ import { prorratearEnvio, inversionLote, totalCompra } from '../negocio.js';
 import { ESTATUS_COMPRA, SUBESTADO_LOTE } from '../dominio.js';
 import { navigate } from '../router.js';
 
-const ESTATUS_OPTIONS = Object.entries(ESTATUS_COMPRA);
+const ESTATUS_OPTIONS = Object.entries(ESTATUS_COMPRA).filter(([v]) => v !== 'recibida_parcial');
 const SUBESTADO_OPTIONS = Object.entries(SUBESTADO_LOTE);
 
 export const compras = {
@@ -36,6 +36,8 @@ function badgeEstatus(estatus) {
   switch (estatus) {
     case 'recibida':
       return 'badge--success';
+    case 'recibida_parcial':
+      return 'badge--warning';
     case 'cancelada_devuelta':
       return 'badge--danger';
     case 'pagada':
@@ -244,7 +246,7 @@ async function renderFormulario(container, id) {
 
     const lotesGuardar = lotes.map((l, i) => {
       const prev = lotesPrevios.find((p) => p.id === l.id) || {};
-      const subEstado = prev.subEstado ?? null;
+      const subEstado = prev.subEstado ?? 'en_camino';
       const envioProrrateado = prorrateo[i];
       return {
         id: l.id || uid('lote'),
@@ -315,6 +317,7 @@ async function renderDetalle(container, id) {
         <label for="c-estatus">Estatus</label>
         <select id="c-estatus" class="select">
           ${ESTATUS_OPTIONS.map(([v, label]) => `<option value="${v}" ${compra.estatus === v ? 'selected' : ''}>${label}</option>`).join('')}
+          <option value="recibida_parcial" disabled ${compra.estatus === 'recibida_parcial' ? 'selected' : ''}>Recibido parcial</option>
         </select>
       </div>
       ${compra.bloqueada ? `<p style="margin:0">🔒 Compra catalogada (bloqueada).</p>` : ''}
@@ -334,6 +337,30 @@ async function renderDetalle(container, id) {
   container.appendChild(view);
 
   const detLotes = view.querySelector('#det-lotes');
+  const estatusSelect = view.querySelector('#c-estatus');
+
+  function actualizarEstatusSelect() {
+    estatusSelect.value = compra.estatus;
+  }
+
+  async function guardarRecepcion() {
+    for (const l of lotes) {
+      l.inversion = inversionLote({ costo: l.costo, envioProrrateado: l.envioProrrateado, subEstado: l.subEstado });
+      l.actualizadoEn = new Date().toISOString();
+    }
+    await bulkPut('lotes', lotes);
+
+    // Estatus automático según sub-estados de los lotes.
+    const recibidos = lotes.filter((l) => l.subEstado === 'recibido').length;
+    if (lotes.length > 0 && recibidos === lotes.length) {
+      compra.estatus = 'recibida';
+    } else if (recibidos > 0) {
+      compra.estatus = 'recibida_parcial';
+    }
+    compra.actualizadoEn = new Date().toISOString();
+    await put('compras', compra);
+    actualizarEstatusSelect();
+  }
 
   function renderDetLotes() {
     detLotes.innerHTML = lotes
@@ -342,7 +369,7 @@ async function renderDetalle(container, id) {
       <div class="card" data-i="${i}">
         <div class="card__row" style="margin-bottom:8px">
           <strong>${escapeHtml(l.nombreProducto)}</strong>
-          <span class="badge badge--neutral">${l.subEstado ? SUBESTADO_LOTE[l.subEstado] : 'Pendiente'}</span>
+          <span class="badge badge--neutral">${l.subEstado ? SUBESTADO_LOTE[l.subEstado] : 'En camino'}</span>
         </div>
         <div class="card__row"><span class="muted">Cantidad</span><span>${l.cantidad}</span></div>
         <div class="card__row"><span class="muted">Costo</span><span>${moneda(l.costo)}</span></div>
@@ -362,36 +389,33 @@ async function renderDetalle(container, id) {
       .join('');
 
     detLotes.querySelectorAll('.det-recibido').forEach((inp) =>
-      inp.addEventListener('input', (e) => {
+      inp.addEventListener('change', async (e) => {
         lotes[Number(inp.closest('.card').dataset.i)].cantidadRecibida = aNumero(e.target.value);
+        await guardarRecepcion();
       })
     );
     detLotes.querySelectorAll('.det-subestado').forEach((sel) =>
-      sel.addEventListener('change', (e) => {
-        lotes[Number(sel.closest('.card').dataset.i)].subEstado = e.target.value;
+      sel.addEventListener('change', async (e) => {
+        const i = Number(sel.closest('.card').dataset.i);
+        lotes[i].subEstado = e.target.value;
+        await guardarRecepcion();
+        renderDetLotes();
       })
     );
   }
   renderDetLotes();
 
-  const guardarRecepcion = document.createElement('button');
-  guardarRecepcion.className = 'btn btn--primary btn--block';
-  guardarRecepcion.type = 'button';
-  guardarRecepcion.textContent = '💾 Guardar recepción';
-  detLotes.appendChild(guardarRecepcion);
-  guardarRecepcion.addEventListener('click', async () => {
-    for (const l of lotes) {
-      l.inversion = inversionLote({ costo: l.costo, envioProrrateado: l.envioProrrateado, subEstado: l.subEstado });
-      l.actualizadoEn = new Date().toISOString();
-    }
-    await bulkPut('lotes', lotes);
-    toast('Recepción guardada', 'success');
-  });
-
   view.querySelector('#c-estatus').addEventListener('change', async (e) => {
     compra.estatus = e.target.value;
-    compra.actualizadoEn = new Date().toISOString();
-    await put('compras', compra);
+    if (compra.estatus === 'recibida') {
+      // Al marcar la compra como "Recibido", todos los lotes quedan recibidos y catalogables.
+      for (const l of lotes) l.subEstado = 'recibido';
+      await guardarRecepcion();
+      renderDetLotes();
+    } else {
+      compra.actualizadoEn = new Date().toISOString();
+      await put('compras', compra);
+    }
     toast('Estatus actualizado', 'success');
   });
 
