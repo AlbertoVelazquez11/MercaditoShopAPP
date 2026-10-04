@@ -41,7 +41,7 @@ async function renderLista(container) {
   }
 
   const pendientes = compras
-    .filter((c) => c.estatus === 'recibida' && !c.bloqueada)
+    .filter((c) => (c.estatus === 'recibida' || c.estatus === 'recibida_parcial') && !c.bloqueada)
     .map((c) => ({ compra: c, lotes: (porCompra.get(c.id) || []).filter(esCatalogable) }))
     .filter((x) => x.lotes.length > 0)
     .sort((a, b) => (a.compra.fecha < b.compra.fecha ? 1 : -1));
@@ -84,6 +84,7 @@ async function renderCompra(container, compraId) {
 
   const lotes = (await getAllByIndex('lotes', 'compraId', compraId)).filter(esCatalogable);
   const tipoLotes = await getAll('tipoLotes');
+  const tiposActivos = tipoLotes.filter((t) => t.status !== 'cerrado');
 
   header(container, `Catalogar · ${compra.proveedor}`, { back: true });
   const view = document.createElement('div');
@@ -96,9 +97,20 @@ async function renderCompra(container, compraId) {
     cont.innerHTML = `<div class="empty"><div class="empty__icon">✅</div><div class="empty__title">Listo</div><p>Todos los lotes recibidos ya fueron catalogados.</p></div>`;
     return;
   }
+  if (!tiposActivos.length) {
+    cont.innerHTML = `
+      <div class="empty">
+        <div class="empty__icon">🗂️</div>
+        <div class="empty__title">Primero creá un tipo de lote</div>
+        <p>Necesitás al menos un tipo de lote para poder catalogar.</p>
+        <a class="btn btn--primary" href="#/tipo-lotes?nueva=1" style="margin-top:12px">＋ Crear tipo de lote</a>
+      </div>`;
+    toast('Primero creá al menos un tipo de lote', 'error');
+    return;
+  }
 
   for (const lote of lotes) {
-    cont.appendChild(await renderLoteCard(lote, tipoLotes, compra));
+    cont.appendChild(await renderLoteCard(lote, tiposActivos, compra));
   }
 }
 
@@ -118,7 +130,7 @@ async function renderLoteCard(lote, tipoLotes, compra) {
     </div>
     <div class="card__row"><span class="muted">Cantidad</span><strong>${target}</strong></div>
     <div class="card__row"><span class="muted">Precio total (inversión)</span><strong>${moneda(lote.inversion)}</strong></div>
-    <div class="card__row"><span class="muted">Precio por producto</span><strong>${moneda(precioPorProducto)}</strong></div>
+    <div class="card__row"><span class="muted">Precio por producto</span><strong id="g-costo">${moneda(precioPorProducto)}</strong></div>
 
     <div id="arts" class="stack"></div>
 
@@ -142,10 +154,8 @@ async function renderLoteCard(lote, tipoLotes, compra) {
     <div class="field">
       <label for="tl-${lote.id}">Asignar a Tipo de Lote</label>
       <select id="tl-${lote.id}" class="select tl-select">
-        ${tipoLotes
-          .filter((t) => t.status !== 'cerrado')
-          .map((t) => `<option value="${t.id}">${escapeHtml(t.nombre)}</option>`)
-          .join('')}
+        <option value="" disabled selected>Elige el tipo de lote</option>
+        ${tipoLotes.map((t) => `<option value="${t.id}">${escapeHtml(t.nombre)}</option>`).join('')}
         <option value="__new">➕ Crear nuevo tipo de lote</option>
       </select>
     </div>
@@ -160,13 +170,14 @@ async function renderLoteCard(lote, tipoLotes, compra) {
   const artsEl = card.querySelector('#arts');
   const gEst = card.querySelector('#g-est');
   const gSum = card.querySelector('#g-sum');
+  const gCosto = card.querySelector('#g-costo');
 
   function recalc() {
     const vend = cantidadVendible(articulos);
     const total = articulos.reduce((a, x) => a + (Number(x.cantidad) || 0), 0);
     gSum.textContent = `${total} / ${target}`;
     gEst.textContent = moneda(gananciaEstimada(articulos, lote.inversion));
-    void vend;
+    gCosto.textContent = moneda(costoUnitarioLote(lote.inversion, vend > 0 ? vend : target));
   }
 
   function renderArts() {
@@ -242,6 +253,7 @@ async function renderLoteCard(lote, tipoLotes, compra) {
 
     // resolver tipo de lote
     let tipoLoteId = tlSelect.value;
+    if (!tipoLoteId) return toast('Elegí el tipo de lote', 'error');
     if (tipoLoteId === '__new') {
       const nombre = card.querySelector('.tl-name').value.trim();
       if (!nombre) return toast('Ingresá el nombre del tipo de lote', 'error');
@@ -264,8 +276,8 @@ async function renderLoteCard(lote, tipoLotes, compra) {
       await put('compras', compra);
     }
 
-    toast(`Lote “${lote.nombreProducto}” catalogado`, 'success');
-    navigate(`/catalogar?compra=${compra.id}`);
+    toast(`Lote "${lote.nombreProducto}" catalogado`, 'success');
+    navigate('/catalogar');
   });
 
   return card;
