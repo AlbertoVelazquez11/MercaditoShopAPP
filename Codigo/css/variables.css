@@ -3,20 +3,20 @@
   --c-primary: #4F46E5;
   --c-primary-strong: #4338CA;
   --c-violet: #7C3AED;
-  --c-accent: #10B981;
-  --c-accent-strong: #059669;
-  --c-danger: #EF4444;
+  --c-accent: #059669;
+  --c-accent-strong: #047857;
+  --c-danger: #DC2626;
   --c-danger-soft: #FEE2E2;
-  --c-warning: #F59E0B;
+  --c-warning: #B45309;
   --c-warning-soft: #FEF3C7;
   --c-success-soft: #D1FAE5;
 
   --c-bg: #F3F4F6;
   --c-surface: #FFFFFF;
   --c-surface-2: #F9FAFB;
-  --c-border: #E5E7EB;
+  --c-border: #D1D5DB;
   --c-text: #111827;
-  --c-text-muted: #6B7280;
+  --c-text-muted: #4B5563;
   --c-text-invert: #FFFFFF;
 
   /* Tipografía (sistema iOS: -apple-system / SF) */
@@ -57,9 +57,9 @@
   --c-bg: #0B0F1A;
   --c-surface: #151B2C;
   --c-surface-2: #1B2233;
-  --c-border: #273143;
+  --c-border: #3B4A63;
   --c-text: #F3F4F6;
-  --c-text-muted: #9CA3AF;
+  --c-text-muted: #D1D5DB;
   --c-text-invert: #111827;
   --c-danger-soft: #3A1F1F;
   --c-warning-soft: #3A2F10;
