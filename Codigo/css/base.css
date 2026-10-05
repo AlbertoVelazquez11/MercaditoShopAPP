@@ -9,6 +9,8 @@
 html {
   -webkit-text-size-adjust: 100%;
   height: 100%;
+  height: -webkit-fill-available;
+  overscroll-behavior-y: contain;
 }
 
 body {
@@ -17,9 +19,13 @@ body {
   line-height: 1.45;
   color: var(--c-text);
   background: var(--c-bg);
+  position: fixed;
+  inset: 0;
+  width: 100%;
   height: 100%;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   overscroll-behavior: contain;
 }
 
@@ -83,6 +89,26 @@ textarea {
 button {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Compatibilidad iOS: sin highlight/tap nativo, sin selección ── */
+a, label, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a, button, img {
+  -webkit-touch-callout: none;
+}
+
+button, .btn, .fab {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Quitar estilos nativos de iOS en inputs/selects para usar los propios */
+input, select, textarea {
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 img {
