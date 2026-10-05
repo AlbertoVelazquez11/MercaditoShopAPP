@@ -105,12 +105,10 @@ async function renderPOS(container) {
       const productos = [...porDesc.values()]
         .map(
           (p) => `
-        <button type="button" class="list-item pos-add" data-tl="${t.id}" data-desc="${escapeHtml(p.descripcion)}" data-precio="${p.precioSugerido}" data-nombre="${escapeHtml(t.nombre)}" style="width:100%;text-align:left">
-          <div class="list-item__body">
-            <div class="list-item__title">${escapeHtml(p.descripcion)}</div>
-            <div class="list-item__subtitle">${p.stock} disponibles</div>
-          </div>
-          <strong>${moneda(p.precioSugerido)}</strong>
+        <button type="button" class="product-btn pos-add" data-tl="${t.id}" data-desc="${escapeHtml(p.descripcion)}" data-precio="${p.precioSugerido}" data-nombre="${escapeHtml(t.nombre)}">
+          <span class="product-btn__name">${escapeHtml(p.descripcion)}</span>
+          <span class="product-btn__price">${moneda(p.precioSugerido)}</span>
+          <span class="product-btn__stock">${p.stock} disp.</span>
         </button>`
         )
         .join('');
@@ -120,7 +118,7 @@ async function renderPOS(container) {
           <h3>${escapeHtml(t.nombre)}</h3>
           <span class="muted">por recuperar: ${moneda(pendiente)}</span>
         </div>
-        <div style="margin:0 -8px">${productos}</div>
+        <div class="product-grid">${productos}</div>
       </div>`;
     })
     .join('');
