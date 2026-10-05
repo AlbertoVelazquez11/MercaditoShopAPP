@@ -107,7 +107,7 @@
   line-height: 1.6;
 }
 
-.badge--success { background: var(--c-success-soft); color: var(--c-accent-strong); }
+.badge--success { background: var(--c-success-soft); color: var(--c-success-strong); }
 .badge--warning { background: var(--c-warning-soft); color: var(--c-warning); }
 .badge--danger  { background: var(--c-danger-soft);  color: var(--c-danger); }
 .badge--neutral { background: var(--c-surface-2); color: var(--c-text-muted); }
@@ -265,7 +265,7 @@
 }
 
 .toast--error { background: var(--c-danger); color: #fff; }
-.toast--success { background: var(--c-accent-strong); color: #fff; }
+.toast--success { background: var(--c-success-strong); color: #fff; }
 
 @keyframes toast-in {
   from { opacity: 0; transform: translateY(8px); }

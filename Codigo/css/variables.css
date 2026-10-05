@@ -1,22 +1,24 @@
 :root {
   /* Paleta */
-  --c-primary: #4F46E5;
-  --c-primary-strong: #4338CA;
+  --c-primary: #2563EB;
+  --c-primary-strong: #1D4ED8;
   --c-violet: #7C3AED;
-  --c-accent: #059669;
-  --c-accent-strong: #047857;
+  --c-accent: #EA580C;
+  --c-accent-strong: #C2410C;
+  --c-success: #16A34A;
+  --c-success-strong: #15803D;
   --c-danger: #DC2626;
   --c-danger-soft: #FEE2E2;
   --c-warning: #B45309;
   --c-warning-soft: #FEF3C7;
-  --c-success-soft: #D1FAE5;
+  --c-success-soft: #DCFCE7;
 
-  --c-bg: #F3F4F6;
-  --c-surface: #FFFFFF;
-  --c-surface-2: #F9FAFB;
-  --c-border: #D1D5DB;
-  --c-text: #111827;
-  --c-text-muted: #4B5563;
+  --c-bg: #DCEAF7;
+  --c-surface: #EDF4FB;
+  --c-surface-2: #E1EDF8;
+  --c-border: #B9CEE3;
+  --c-text: #0F1B2D;
+  --c-text-muted: #3E5879;
   --c-text-invert: #FFFFFF;
 
   /* Tipografía (sistema iOS: -apple-system / SF) */
