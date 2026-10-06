@@ -9,7 +9,6 @@ import {
   inversionTotalLotes,
   cantidadVendible,
   totalVenta,
-  calcularCambio,
   distribuirDescuento,
 } from '../negocio.js';
 import { METODO_PAGO } from '../dominio.js';
@@ -181,45 +180,33 @@ async function renderPOS(container) {
         ${esMixta ? `<p class="muted" style="font-size:13px">Venta mixta: el descuento quedará pendiente de asignar.</p>` : ''}
         <div class="field"><label>Descuento (MXN)</label><input id="cob-desc" class="input" type="number" inputmode="decimal" min="0" step="0.01" value="0" /></div>
         <div class="field"><label>Método de pago</label><select id="cob-metodo" class="select">${METODO_OPTIONS.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select></div>
-        <div class="field"><label>Pago con (MXN)</label><input id="cob-pago" class="input" type="number" inputmode="decimal" min="0" step="0.01" /></div>
         <div class="card__row"><span class="muted">Total</span><strong id="cob-total">${moneda(subtotal)}</strong></div>
-        <div class="card__row"><span class="muted">Cambio</span><strong id="cob-cambio">${moneda(0)}</strong></div>
         <button id="cob-confirmar" class="btn btn--accent btn--block btn--lg" type="button">Confirmar venta</button>
         <button id="cob-cancelar" class="btn btn--ghost btn--block" type="button">Volver</button>
       </div>`;
 
     const descInput = cartEl.querySelector('#cob-desc');
-    const pagoInput = cartEl.querySelector('#cob-pago');
     const totalEl = cartEl.querySelector('#cob-total');
-    const cambioEl = cartEl.querySelector('#cob-cambio');
 
     function recalcCobro() {
       const d = aNumero(descInput.value);
-      const total = totalVenta(subtotal, d);
-      totalEl.textContent = moneda(total);
-      cambioEl.textContent = moneda(calcularCambio(aNumero(pagoInput.value), total));
+      totalEl.textContent = moneda(totalVenta(subtotal, d));
     }
     descInput.addEventListener('input', recalcCobro);
-    pagoInput.addEventListener('input', recalcCobro);
 
     cartEl.querySelector('#cob-cancelar').addEventListener('click', renderCart);
     cartEl.querySelector('#cob-confirmar').addEventListener('click', async () => {
       const descuento = aNumero(descInput.value);
       const total = totalVenta(subtotal, descuento);
       const metodoPago = cartEl.querySelector('#cob-metodo').value;
-      const pagoCon = aNumero(pagoInput.value);
-      const cambio = calcularCambio(pagoCon, total);
-      if (metodoPago === 'efectivo' && pagoCon > 0 && pagoCon < total) {
-        return toast('El pago es menor al total', 'error');
-      }
 
       try {
-        await confirmarVenta({ lineas, subtotal, descuento, total, metodoPago, pagoCon, cambio, esMixta });
+        await confirmarVenta({ lineas, subtotal, descuento, total, metodoPago, esMixta });
       } catch (e) {
         return toast(e.message, 'error');
       }
 
-      toast(`Venta cobrada: ${moneda(total)}${cambio ? ` · cambio ${moneda(cambio)}` : ''}`, 'success');
+      toast(`Venta cobrada: ${moneda(total)}`, 'success');
       cart.clear();
       renderCart();
       // refresca disponibilidad
@@ -250,7 +237,7 @@ async function renderPOS(container) {
 }
 
 /* ---------- confirmación de venta (FIFO) ---------- */
-async function confirmarVenta({ lineas, subtotal, descuento, total, metodoPago, pagoCon, cambio, esMixta }) {
+async function confirmarVenta({ lineas, subtotal, descuento, total, metodoPago, esMixta }) {
   const articulos = await getAll('articulos');
   const lotes = await getAll('lotes');
   const compras = await getAll('compras');
@@ -324,8 +311,6 @@ async function confirmarVenta({ lineas, subtotal, descuento, total, metodoPago, 
     descuento: redondear(descuento),
     total,
     metodoPago,
-    pagoCon: pagoCon || null,
-    cambio,
     estado: 'cobrada',
     motivoCancelacion: null,
     esMixta,
