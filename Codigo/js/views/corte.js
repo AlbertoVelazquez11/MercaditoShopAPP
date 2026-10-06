@@ -59,8 +59,10 @@ async function renderLista(container) {
       <div class="card stack">
         <div class="card__row"><h3>${escapeHtml(t.nombre)}</h3></div>
         <div class="card__row"><span class="muted">Inversión</span><strong>${moneda(m.inversionTotal)}</strong></div>
-        <div class="card__row"><span class="muted">Recuperado</span><strong>${moneda(m.ventasTotales)}</strong></div>
-        <div class="card__row"><span class="muted">${m.ganancia >= 0 ? 'Ganancia' : 'Por recuperar'}</span><strong>${moneda(Math.abs(m.ganancia >= 0 ? m.ganancia : m.pendiente))}</strong></div>
+        <div class="card__row"><span class="muted">Vendido</span><strong>${moneda(m.ventasTotales)}</strong></div>
+        ${m.pendiente > 0
+          ? `<div class="card__row"><span class="muted">Por recuperar</span><strong style="color:var(--c-danger)">${moneda(m.pendiente)}</strong></div>`
+          : `<div class="card__row"><span class="muted">Ganancias</span><strong style="color:var(--c-success)">${moneda(m.ganancia)}</strong></div>`}
         <button class="btn btn--danger btn--block corte-btn" data-id="${t.id}" data-nombre="${escapeHtml(t.nombre)}" type="button">✂️ Cortar (cierre de temporada)</button>
       </div>`;
     })
