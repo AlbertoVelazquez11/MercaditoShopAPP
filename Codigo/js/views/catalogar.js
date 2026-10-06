@@ -138,8 +138,8 @@ async function renderLoteCard(lote, tipoLotes, compra) {
       <div class="card__row" style="margin-bottom:8px"><span class="card__title">＋ Agregar artículo</span></div>
       <div class="field"><input class="input a-desc" placeholder="Descripción (ej. Calceta reno)" /></div>
       <div style="display:flex;gap:8px">
-        <div class="field" style="flex:1"><label>Precio sugerido</label><input class="input a-precio" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" /></div>
         <div class="field" style="flex:1"><label>Cantidad</label><input class="input a-cant" type="number" inputmode="numeric" min="1" step="1" placeholder="1" /></div>
+        <div class="field" style="flex:1"><label>Precio sugerido</label><input class="input a-precio" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" /></div>
       </div>
       <label style="display:flex;align-items:center;gap:8px;font-size:14px"><input class="a-merma" type="checkbox" /> Merma (precio $0, no vendible)</label>
       <button class="btn btn--primary btn--block a-add" type="button" style="margin-top:8px">Agregar</button>
@@ -247,6 +247,17 @@ async function renderLoteCard(lote, tipoLotes, compra) {
         mensaje: `Faltan ${target - totalCatalogado} producto(s) para completar el lote. ¿Desea marcarlos como faltantes?`,
         textoConfirmar: 'Marcar faltantes',
         textoCancelar: 'Seguir catalogando',
+      });
+      if (!ok) return;
+    }
+
+    const ganEst = gananciaEstimada(articulos, lote.inversion);
+    if (ganEst < 0) {
+      const ok = await confirmar({
+        titulo: 'Ganancia estimada negativa',
+        mensaje: `La ganancia estimada es ${moneda(ganEst)}. ¿Desea continuar de todos modos?`,
+        textoConfirmar: 'Continuar',
+        textoCancelar: 'Ajustar',
       });
       if (!ok) return;
     }
