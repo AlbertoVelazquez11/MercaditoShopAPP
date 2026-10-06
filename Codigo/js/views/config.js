@@ -11,7 +11,7 @@ export const config = {
   title: 'Configuración',
   render(container) {
     const cfg = cargarConfig();
-    header(container, 'Configuración', { back: true });
+    header(container, 'Configuración', { back: true, home: false });
 
     const view = document.createElement('div');
     view.className = 'view';

@@ -31,7 +31,7 @@ async function renderPOS(container) {
   histBtn.setAttribute('aria-label', 'Historial de ventas');
   histBtn.textContent = '🕘';
 
-  header(container, 'Venta', { back: true, right: histBtn });
+  header(container, 'Venta', { back: true, right: histBtn, home: false });
   const view = document.createElement('div');
   view.className = 'view';
   view.innerHTML = `
@@ -115,7 +115,9 @@ async function renderPOS(container) {
       <div class="card stack">
         <div class="card__row">
           <h3>${escapeHtml(t.nombre)}</h3>
-          <span class="muted">por recuperar: ${moneda(pendiente)}</span>
+          ${pendiente > 0
+            ? `<span style="color:var(--c-danger)">por recuperar: ${moneda(pendiente)}</span>`
+            : `<span style="color:var(--c-success)">Ganancia: ${moneda(-pendiente)}</span>`}
         </div>
         <div class="product-grid">${productos}</div>
       </div>`;
@@ -323,7 +325,7 @@ async function confirmarVenta({ lineas, subtotal, descuento, total, metodoPago, 
 
 /* ---------- historial de ventas ---------- */
 async function renderHistorial(container) {
-  header(container, 'Ventas', { back: true });
+  header(container, 'Ventas', { back: true, home: false });
   const view = document.createElement('div');
   view.className = 'view';
   view.innerHTML = `<div id="ventas-lista"></div>`;

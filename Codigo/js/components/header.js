@@ -1,5 +1,5 @@
 // components/header.js — barra superior con botón de atrás y acciones.
-export function header(container, title, { back = false, right = null } = {}) {
+export function header(container, title, { back = false, right = null, home = true } = {}) {
   const h = document.createElement('header');
   h.className = 'app-header';
 
@@ -22,7 +22,16 @@ export function header(container, title, { back = false, right = null } = {}) {
 
   if (right) {
     h.appendChild(right);
-  } else {
+  }
+
+  if (home) {
+    const homeBtn = document.createElement('a');
+    homeBtn.className = 'btn btn--icon';
+    homeBtn.href = '#/';
+    homeBtn.setAttribute('aria-label', 'Inicio');
+    homeBtn.textContent = '🏠';
+    h.appendChild(homeBtn);
+  } else if (!right) {
     h.appendChild(placeholder());
   }
 
