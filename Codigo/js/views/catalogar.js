@@ -2,7 +2,7 @@
 import { header } from '../components/header.js';
 import { toast } from '../components/toast.js';
 import { confirmar } from '../components/modal.js';
-import { getAll, get, put, getAllByIndex, getByIndex } from '../db.js';
+import { getAll, get, put, bulkPut, getAllByIndex, getByIndex } from '../db.js';
 import { uid, fecha, moneda, escapeHtml, aNumero } from '../utils.js';
 import { cantidadVendible, costoUnitarioLote, gananciaEstimada } from '../negocio.js';
 import { navigate } from '../router.js';
@@ -85,6 +85,7 @@ async function renderCompra(container, compraId) {
   const lotes = (await getAllByIndex('lotes', 'compraId', compraId)).filter(esCatalogable);
   const tipoLotes = await getAll('tipoLotes');
   const tiposActivos = tipoLotes.filter((t) => t.status !== 'cerrado');
+  const articulosExistentes = await getAll('articulos');
 
   header(container, `Catalogar · ${compra.proveedor}`, { back: true });
   const view = document.createElement('div');
@@ -110,18 +111,27 @@ async function renderCompra(container, compraId) {
   }
 
   for (const lote of lotes) {
-    cont.appendChild(await renderLoteCard(lote, tiposActivos, compra));
+    cont.appendChild(await renderLoteCard(lote, tiposActivos, compra, articulosExistentes));
   }
 }
 
 /* ---------- tarjeta por lote ---------- */
-async function renderLoteCard(lote, tipoLotes, compra) {
+async function renderLoteCard(lote, tipoLotes, compra, articulosExistentes = []) {
   const card = document.createElement('div');
   card.className = 'card stack';
 
   const target = targetDeLote(lote);
   const articulos = []; // estado en memoria
   const precioPorProducto = costoUnitarioLote(lote.inversion, target);
+
+  // descripciones y precio actual por tipo de lote (para autocompletar y homologar)
+  const descPorTipo = new Map();
+  for (const a of articulosExistentes) {
+    if (!descPorTipo.has(a.tipoLoteId)) descPorTipo.set(a.tipoLoteId, new Map());
+    const m = descPorTipo.get(a.tipoLoteId);
+    const key = (a.descripcion || '').trim().toLowerCase();
+    if (!m.has(key)) m.set(key, Number(a.precioSugerido) || 0);
+  }
 
   card.innerHTML = `
     <div class="card__row">
@@ -132,11 +142,25 @@ async function renderLoteCard(lote, tipoLotes, compra) {
     <div class="card__row"><span class="muted">Precio total (inversión)</span><strong>${moneda(lote.inversion)}</strong></div>
     <div class="card__row"><span class="muted">Precio por producto</span><strong id="g-costo">${moneda(precioPorProducto)}</strong></div>
 
+    <div class="field">
+      <label for="tl-${lote.id}">Tipo de Lote</label>
+      <select id="tl-${lote.id}" class="select tl-select">
+        <option value="" disabled selected>Elige el tipo de lote</option>
+        ${tipoLotes.map((t) => `<option value="${t.id}">${escapeHtml(t.nombre)}</option>`).join('')}
+        <option value="__new">➕ Crear nuevo tipo de lote</option>
+      </select>
+    </div>
+    <div class="field tl-new hidden">
+      <label>Nombre del nuevo tipo de lote</label>
+      <input class="input tl-name" placeholder="Ej. Calcetas" />
+    </div>
+
     <div id="arts" class="stack"></div>
 
     <div class="card" style="background:var(--c-surface-2)">
       <div class="card__row" style="margin-bottom:8px"><span class="card__title">＋ Agregar artículo</span></div>
-      <div class="field"><input class="input a-desc" placeholder="Descripción (ej. Calceta reno)" /></div>
+      <div class="field"><input class="input a-desc" list="dl-${lote.id}" placeholder="Descripción (ej. Calceta reno)" autocomplete="off" /></div>
+      <datalist id="dl-${lote.id}"></datalist>
       <div style="display:flex;gap:8px">
         <div class="field" style="flex:1"><label>Cantidad</label><input class="input a-cant" type="number" inputmode="numeric" min="1" step="1" placeholder="1" /></div>
         <div class="field" style="flex:1"><label>Precio sugerido</label><input class="input a-precio" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" /></div>
@@ -150,19 +174,6 @@ async function renderLoteCard(lote, tipoLotes, compra) {
       <strong id="g-est">${moneda(0)}</strong>
     </div>
     <div class="card__row"><span class="muted">Catalogado</span><strong id="g-sum">0 / ${target}</strong></div>
-
-    <div class="field">
-      <label for="tl-${lote.id}">Asignar a Tipo de Lote</label>
-      <select id="tl-${lote.id}" class="select tl-select">
-        <option value="" disabled selected>Elige el tipo de lote</option>
-        ${tipoLotes.map((t) => `<option value="${t.id}">${escapeHtml(t.nombre)}</option>`).join('')}
-        <option value="__new">➕ Crear nuevo tipo de lote</option>
-      </select>
-    </div>
-    <div class="field tl-new hidden">
-      <label>Nombre del nuevo tipo de lote</label>
-      <input class="input tl-name" placeholder="Ej. Calcetas" />
-    </div>
 
     <button class="btn btn--accent btn--block btn--lg f-finalizar" type="button">Finalizar lote</button>
   `;
@@ -230,11 +241,30 @@ async function renderLoteCard(lote, tipoLotes, compra) {
     renderArts();
   });
 
-  // mostrar/ocultar campo de nuevo tipo de lote
+  // mostrar/ocultar campo de nuevo tipo de lote + actualizar sugerencias
   const tlSelect = card.querySelector('.tl-select');
   const tlNew = card.querySelector('.tl-new');
+  const datalist = card.querySelector(`#dl-${lote.id}`);
+
+  function actualizarSugerencias() {
+    const map = descPorTipo.get(tlSelect.value);
+    datalist.innerHTML = map ? [...map.keys()].map((d) => `<option value="${escapeHtml(d)}"></option>`).join('') : '';
+  }
+
   tlSelect.addEventListener('change', () => {
     tlNew.classList.toggle('hidden', tlSelect.value !== '__new');
+    actualizarSugerencias();
+  });
+
+  // sugerencia de precio al escribir una descripción existente
+  card.querySelector('.a-desc').addEventListener('input', () => {
+    const precioInput = card.querySelector('.a-precio');
+    const key = card.querySelector('.a-desc').value.trim().toLowerCase();
+    const map = descPorTipo.get(tlSelect.value);
+    const precio = map && map.get(key);
+    if (precio != null && !precioInput.value) {
+      precioInput.value = precio;
+    }
   });
 
   card.querySelector('.f-finalizar').addEventListener('click', async () => {
@@ -272,6 +302,35 @@ async function renderLoteCard(lote, tipoLotes, compra) {
     }
 
     const costoUnitario = costoUnitarioLote(lote.inversion, cantidadVendible(articulos));
+
+    // homologación de precio: si un artículo existente cambió de precio, actualizar solo los que tienen stock
+    const tipoMap = descPorTipo.get(tipoLoteId);
+    if (tipoMap) {
+      const porDesc = new Map();
+      for (const a of articulosExistentes) {
+        if (a.tipoLoteId !== tipoLoteId) continue;
+        const key = (a.descripcion || '').trim().toLowerCase();
+        if (!porDesc.has(key)) porDesc.set(key, []);
+        porDesc.get(key).push(a);
+      }
+      const aTocar = [];
+      for (const art of articulos) {
+        if (art.esMerma) continue;
+        const key = art.descripcion.toLowerCase();
+        const precioActual = tipoMap.get(key);
+        if (precioActual != null && Number(art.precioSugerido) !== precioActual) {
+          for (const a of porDesc.get(key) || []) {
+            if ((Number(a.stock) || 0) > 0) {
+              a.precioSugerido = Number(art.precioSugerido);
+              a.actualizadoEn = new Date().toISOString();
+              aTocar.push(a);
+            }
+          }
+        }
+      }
+      if (aTocar.length) await bulkPut('articulos', aTocar);
+    }
+
     await guardarArticulos(lote.id, tipoLoteId, articulos, costoUnitario);
 
     lote.catalogado = true;
