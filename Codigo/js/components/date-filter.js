@@ -1,11 +1,13 @@
 // components/date-filter.js — filtro por rango de fechas.
+import { hoyISO } from '../utils.js';
+
 /**
  * Crea un filtro de rango de fechas (desde / hasta).
  * @param {HTMLElement} container
  * @param {{desde?:string, hasta?:string, onChange?:Function}} opts
  * @returns {{getValues:Function, desde:HTMLInputElement, hasta:HTMLInputElement}}
  */
-export function dateFilter(container, { desde = '', hasta = '', onChange } = {}) {
+export function dateFilter(container, { desde = hoyISO(), hasta = hoyISO(), onChange } = {}) {
   const div = document.createElement('div');
   div.className = 'date-filter';
 

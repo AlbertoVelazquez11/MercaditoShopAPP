@@ -106,9 +106,9 @@ async function renderLista(container) {
       .join('');
   }
 
-  dateFilter(view.querySelector('#compras-filtro'), { onChange: cargar });
+  const filtro = dateFilter(view.querySelector('#compras-filtro'), { onChange: cargar });
   view.querySelector('#compras-nueva').addEventListener('click', () => navigate('/compras?nueva=1'));
-  await cargar();
+  await cargar(filtro.getValues());
 }
 
 /* ---------- formulario ---------- */
@@ -150,7 +150,7 @@ async function renderFormulario(container, id) {
       </div>
       <div class="field">
         <label for="c-envio">Costo de envío (MXN)</label>
-        <input id="c-envio" class="input" type="number" inputmode="decimal" min="0" step="0.01" value="${compra?.costoEnvio ?? 0}" />
+        <input id="c-envio" class="input" type="number" inputmode="decimal" min="0" step="0.01" value="${compra?.costoEnvio || ''}" placeholder="0.00" />
       </div>
       <div class="field">
         <label>Lotes</label>
