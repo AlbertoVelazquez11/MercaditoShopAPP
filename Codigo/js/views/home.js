@@ -14,7 +14,7 @@ export const home = {
       <div class="home__brand">${escapeHtml(cfg.nombreNegocio)}</div>
       <div class="home__actions">
         <a class="btn btn--primary" href="#/venta">🛒 Venta</a>
-        <a class="btn btn--ghost" href="#/admin">⚙️ Administración</a>
+        <a class="btn btn--ghost" href="#/admin">🛠️ Administración</a>
       </div>
     `;
     container.appendChild(view);

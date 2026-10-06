@@ -1,10 +1,10 @@
 :root {
   /* Paleta */
-  --c-primary: #2563EB;
-  --c-primary-strong: #1D4ED8;
+  --c-primary: #EA580C;
+  --c-primary-strong: #C2410C;
   --c-violet: #7C3AED;
-  --c-accent: #EA580C;
-  --c-accent-strong: #C2410C;
+  --c-accent: #DB2777;
+  --c-accent-strong: #BE185D;
   --c-success: #16A34A;
   --c-success-strong: #15803D;
   --c-danger: #DC2626;
@@ -13,12 +13,12 @@
   --c-warning-soft: #FEF3C7;
   --c-success-soft: #DCFCE7;
 
-  --c-bg: #DCEAF7;
-  --c-surface: #EDF4FB;
-  --c-surface-2: #E1EDF8;
-  --c-border: #B9CEE3;
-  --c-text: #0F1B2D;
-  --c-text-muted: #3E5879;
+  --c-bg: #FDEBE3;
+  --c-surface: #FDF2F4;
+  --c-surface-2: #FAE3E8;
+  --c-border: #F0C9D2;
+  --c-text: #1F1317;
+  --c-text-muted: #7A4B56;
   --c-text-invert: #FFFFFF;
 
   /* Tipografía (sistema iOS: -apple-system / SF) */
