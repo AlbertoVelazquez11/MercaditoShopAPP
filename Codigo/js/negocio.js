@@ -89,10 +89,20 @@ export function calcularCambio(pagoCon, total) {
  */
 export function gananciaEstimada(articulos, inversionTotal) {
   const potencial = (articulos || []).reduce(
-    (acc, a) => acc + (a.esMerma ? 0 : (Number(a.precioSugerido) || 0) * (Number(a.stock) || 0)),
+    (acc, a) => acc + (a.esMerma ? 0 : (Number(a.precioSugerido) || 0) * (Number(a.stock ?? a.cantidad) || 0)),
     0
   );
   return redondear(potencial - (Number(inversionTotal) || 0));
+}
+
+/** Ingreso máximo potencial: Σ precio sugerido × stock de artículos vendibles. */
+export function ventaMaxima(articulos) {
+  return redondear(
+    (articulos || []).reduce(
+      (acc, a) => acc + (a.esMerma ? 0 : (Number(a.precioSugerido) || 0) * (Number(a.stock) || 0)),
+      0
+    )
+  );
 }
 
 /**

@@ -4,7 +4,7 @@ import { toast } from '../components/toast.js';
 import { confirmar } from '../components/modal.js';
 import { getAll, get, put, remove, getAllByIndex } from '../db.js';
 import { uid, escapeHtml, moneda } from '../utils.js';
-import { inversionTotalLotes, cantidadVendible, metricasTipoLote } from '../negocio.js';
+import { inversionTotalLotes, cantidadVendible, metricasTipoLote, ventaMaxima } from '../negocio.js';
 import { STATUS_TIPO_LOTE, SUBESTADO_LOTE } from '../dominio.js';
 import { navigate } from '../router.js';
 
@@ -138,6 +138,7 @@ async function renderDetalle(container, id) {
     ventasTotales: ventas,
     articulos,
   });
+  const vm = ventaMaxima(articulos);
 
   header(container, escapeHtml(tipo.nombre), { back: true });
   const view = document.createElement('div');
@@ -151,9 +152,10 @@ async function renderDetalle(container, id) {
         </select>
       </div>
       <div class="card__row"><span class="muted">Inversión total</span><strong>${moneda(m.inversionTotal)}</strong></div>
-      <div class="card__row"><span class="muted">Costo por unidad</span><strong>${moneda(m.costoPromedio)}</strong></div>
-      <div class="card__row"><span class="muted">Por recuperar</span><strong>${moneda(m.pendiente)}</strong></div>
-      <div class="card__row"><span class="muted">Ventas</span><strong>${moneda(m.ventasTotales)}</strong></div>
+      ${m.pendiente > 0
+        ? `<div class="card__row"><span class="muted">Inversión por recuperar</span><strong style="color:var(--c-danger)">${moneda(m.pendiente)}</strong></div>`
+        : `<div class="card__row"><span class="muted">Ganancia de venta</span><strong style="color:var(--c-success)">${moneda(m.ganancia)}</strong></div>`}
+      <div class="card__row"><span class="muted">Venta máxima</span><strong>${moneda(vm)}</strong></div>
       <div class="card__row"><span class="muted">Ganancia estimada</span><strong>${moneda(m.gananciaEstimada)}</strong></div>
     </div>
 
