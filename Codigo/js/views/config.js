@@ -24,7 +24,7 @@ export const config = {
         </div>
         <div class="field">
           <label>Logo</label>
-          <img id="cfg-logo-preview" class="config__logo" src="${cfg.logo || './icons/icon.svg'}" alt="Logo" />
+          <img id="cfg-logo-preview" class="config__logo" src="${cfg.logo || './icons/logo.png'}" alt="Logo" />
           <input id="cfg-logo-input" type="file" accept="image/*" class="hidden" />
           <div style="display:flex;gap:8px">
             <button id="cfg-logo-btn" class="btn btn--ghost" type="button">Cambiar logo</button>
@@ -95,7 +95,7 @@ export const config = {
     });
     logoClear.addEventListener('click', () => {
       guardarConfig({ logo: null });
-      preview.src = './icons/icon.svg';
+      preview.src = './icons/logo.png';
       logoClear.disabled = true;
       logoInput.value = '';
       toast('Logo restablecido', 'success');

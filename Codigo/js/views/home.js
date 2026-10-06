@@ -10,7 +10,7 @@ export const home = {
     view.className = 'view home';
     view.innerHTML = `
       <a class="btn btn--icon home__gear" href="#/config" aria-label="Configuración">⚙️</a>
-      <img class="home__logo" src="${cfg.logo || './icons/icon.svg'}" alt="Logo" />
+      <img class="home__logo" src="${cfg.logo || './icons/logo.png'}" alt="Logo" />
       <div class="home__brand">${escapeHtml(cfg.nombreNegocio)}</div>
       <div class="home__actions">
         <a class="btn btn--primary" href="#/venta">🛒 Venta</a>
